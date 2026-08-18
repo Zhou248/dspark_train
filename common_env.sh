@@ -36,7 +36,8 @@ export VLLM_PORT=8000
 # 跑通，再逐级调到 2/4；不要一开始就叠加 async scheduling + AIV。
 export QD_MAX_NUM_SEQS="${QD_MAX_NUM_SEQS:-1}"
 export HS_CONCURRENCY="${HS_CONCURRENCY:-1}"
-export HS_MAX_CONSECUTIVE_ERRORS="${HS_MAX_CONSECUTIVE_ERRORS:-1}"
+# 单条坏样本由 04a 记录并跳过；只有连续多条失败才视为服务异常并停止。
+export HS_MAX_CONSECUTIVE_ERRORS="${HS_MAX_CONSECUTIVE_ERRORS:-20}"
 export REPAIR_EXISTING_HS="${REPAIR_EXISTING_HS:-1}"
 export ENABLE_AIV="${ENABLE_AIV:-0}"
 export QD_ENABLE_EP="${QD_ENABLE_EP:-0}"

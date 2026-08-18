@@ -65,6 +65,7 @@ def main() -> None:
         describe_images(item["messages"])
 
     client = openai.OpenAI(base_url=args.endpoint, api_key="EMPTY", max_retries=0)
+    previous_hidden_states = None
     for attempt in range(1, args.repeat + 1):
         handle: str | None = None
         try:
@@ -86,6 +87,14 @@ def main() -> None:
             print(
                 f"attempt={attempt} handle={handle} shape={list(hidden_states.shape)}"
             )
+            if previous_hidden_states is not None:
+                difference = (hidden_states - previous_hidden_states).abs().float()
+                print(
+                    "  previous_diff "
+                    f"max={float(difference.max()):.6g} "
+                    f"mean={float(difference.mean()):.6g} "
+                    f"changed={int(difference.ne(0).sum())}/{difference.numel()}"
+                )
             for slot in range(hidden_states.shape[1]):
                 layer_id = (
                     args.layer_ids[slot] if slot < len(args.layer_ids) else slot
@@ -98,6 +107,7 @@ def main() -> None:
                 )
             check_hidden_states(data, item["input_ids"])
             print(f"attempt={attempt} VALID")
+            previous_hidden_states = hidden_states.clone()
         except Exception as exc:  # noqa: BLE001 - diagnostic must print all failures
             print(f"attempt={attempt} ERROR {type(exc).__name__}: {exc}")
         finally:

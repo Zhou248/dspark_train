@@ -1,5 +1,5 @@
 #!/bin/bash
-# Step 4b: 离线训练（隐状态已由 04a 全部缓存，不需要 vllm 服务）
+# Step 4b: 离线训练（使用 04a 的有效缓存，缺失/坏样本跳过，不需要 vllm 服务）
 set -euo pipefail
 cd "$(dirname "$0")"
 source ./common_env.sh
@@ -29,6 +29,6 @@ ASCEND_RT_VISIBLE_DEVICES="${TRAIN_NPUS}" torchrun \
     --epochs "${EPOCHS}" \
     --save-best \
     --lr "${LR}" \
-    --on-missing raise
+    --on-missing skip
 
 echo "训练完成，checkpoint: ${CKPT_DIR}"

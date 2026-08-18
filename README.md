@@ -14,10 +14,11 @@
 6. `04_train_dspark.sh`: online training; hidden states are generated on demand
    and deleted after each sample.
 7. `04a_generate_hidden_states.sh`: offline-data stage; generate and validate
-   all hidden-state files before training.
+   hidden-state files, logging and skipping isolated failed samples.
 8. `repair_hidden_states.py`: validate existing `hs_*.safetensors` and remove
    files containing NaN/Inf or mismatched token IDs.
-9. `04b_train_offline.sh`: train only from validated cached hidden states.
+9. `04b_train_offline.sh`: train only from validated cached hidden states;
+   samples with missing caches are skipped.
 10. `05_convert_and_serve.sh`: serve `checkpoint_best` directly with DSpark.
 
 ## Recommended offline workflow
@@ -33,6 +34,11 @@ bash 05_convert_and_serve.sh
 
 Hidden-state extraction defaults to the conservative configuration
 `QD_MAX_NUM_SEQS=1`, `HS_CONCURRENCY=1`, synchronous scheduling, and AIV off.
+At `HS_CONCURRENCY=1`, 04a uses `generate_hidden_states_sequential.py` and waits
+for each safetensors lock and validation result before sending the next request.
+Isolated failures are skipped. The job stops after 20 consecutive failures by
+default (`HS_MAX_CONSECUTIVE_ERRORS=20`) so a broken vLLM service cannot silently
+discard the whole dataset.
 After a clean run, increase one dimension at a time:
 
 ```bash

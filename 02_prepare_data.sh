@@ -1,7 +1,8 @@
 #!/bin/bash
 # Step 2: 构建数据集 + 用 target processor 编码（生成 input_ids/loss_mask/messages）
 set -euo pipefail
-cd "$(dirname "$0")"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+cd "${SCRIPT_DIR}"
 source ./common_env.sh
 
 # 2.1 数据归一化 -> conversations.jsonl
@@ -31,5 +32,12 @@ python3 scripts/prepare_data.py \
     --max-samples "${MAX_SAMPLES}" \
     --seq-length "${SEQ_LENGTH}" \
     --overwrite
+
+# 2.3 生成 DSpark 的纯文本 Qwen3 decoder config。Qwen3.6 target 是 MRoPE，
+#     但多模态 DSpark draft 必须使用不含 mrope_section 的 1-D RoPE。
+python3 "${SCRIPT_DIR}/02a_build_draft_config.py" \
+    --target-model "${TARGET_MODEL}" \
+    --output-dir "${DRAFT_CONFIG_DIR}" \
+    --num-layers "${NUM_LAYERS}"
 
 echo "数据准备完成: ${PREPARED_DATA_DIR}"

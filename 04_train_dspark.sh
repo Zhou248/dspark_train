@@ -14,14 +14,13 @@ ASCEND_RT_VISIBLE_DEVICES="${TRAIN_NPUS}" torchrun \
     --standalone --nproc_per_node "${TRAIN_NPROC}" \
     scripts/train.py \
     --verifier-name-or-path "${TARGET_MODEL}" \
-    --draft-arch "${DRAFT_ARCH}" \
+    --draft-config "${DRAFT_CONFIG_DIR}" \
     --data-path "${PREPARED_DATA_DIR}" \
     --vllm-endpoint "${QD_ENDPOINT}" \
     --hidden-states-backend file \
     --hidden-states-path "${HIDDEN_STATES_DIR}" \
     --save-path "${CKPT_DIR}" \
     --speculator-type dspark \
-    --num-layers "${NUM_LAYERS}" \
     --block-size "${BLOCK_SIZE}" \
     --max-anchors "${MAX_ANCHORS}" \
     --target-layer-ids ${TARGET_LAYER_IDS} \
@@ -32,10 +31,16 @@ ASCEND_RT_VISIBLE_DEVICES="${TRAIN_NPUS}" torchrun \
     --confidence-head-with-markov \
     --confidence-head-alpha 1.0 \
     --loss-fn '{"ce": 0.1, "tv": 0.9}' \
+    --draft-attn-impl eager \
     --total-seq-len "${SEQ_LENGTH}" \
     --epochs "${EPOCHS}" \
+    --save-best \
     --lr "${LR}" \
     --on-missing generate \
-    --on-generate delete
+    --on-generate delete \
+    --request-timeout 600 \
+    --max-retries 3 \
+    --num-workers 1 \
+    --prefetch-factor 2
 
 echo "训练完成，checkpoint: ${CKPT_DIR}"

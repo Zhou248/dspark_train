@@ -16,7 +16,6 @@ _normalize_conversation / _adapt_part_for_vllm）：
 """
 import argparse
 import base64
-import io
 import json
 import os
 
@@ -84,7 +83,10 @@ def is_json_array(path: str) -> bool:
     if not path.endswith(".json"):
         return False
     with open(path) as f:
-        return f.read(1).lstrip().startswith("[")
+        while char := f.read(1):
+            if not char.isspace():
+                return char == "["
+    return False
 
 
 def normalize_conversations_array(json_path: str, out_dir: str, limit: int | None):
@@ -98,6 +100,7 @@ def normalize_conversations_array(json_path: str, out_dir: str, limit: int | Non
         data = json.load(f)
     if limit is not None:
         data = data[:limit]
+    source_dir = os.path.dirname(os.path.abspath(json_path))
     n_img = 0
     with open(os.path.join(out_dir, "conversations.jsonl"), "w") as f:
         for item in data:
@@ -109,7 +112,15 @@ def normalize_conversations_array(json_path: str, out_dir: str, limit: int | Non
                 else:
                     for part in v:
                         if part.get("type") in ("image", "video", "audio"):
-                            part["path"] = os.path.abspath(part["path"])
+                            media_path = part["path"]
+                            if not os.path.isabs(media_path):
+                                media_path = os.path.join(source_dir, media_path)
+                            media_path = os.path.abspath(media_path)
+                            if not os.path.exists(media_path):
+                                raise FileNotFoundError(
+                                    f"media path does not exist: {media_path}"
+                                )
+                            part["path"] = media_path
                             n_img += 1
                 turn.pop("content", None)
             f.write(json.dumps({"conversations": conv}, ensure_ascii=False) + "\n")
@@ -138,8 +149,7 @@ def main():
 
     out = os.path.join(args.output_dir, "conversations.jsonl")
     with open(out, "w") as f:
-        for r in rows:
-            f.write(json.dumps(r, ensure_ascii=False) + "\n")
+        f.writelines(json.dumps(r, ensure_ascii=False) + "\n" for r in rows)
     print(f"wrote {len(rows)} samples -> {out}")
 
 

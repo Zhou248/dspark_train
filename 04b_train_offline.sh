@@ -9,11 +9,11 @@ ASCEND_RT_VISIBLE_DEVICES="${TRAIN_NPUS}" torchrun \
     --standalone --nproc_per_node "${TRAIN_NPROC}" \
     scripts/train.py \
     --verifier-name-or-path "${TARGET_MODEL}" \
-    --draft-arch "${DRAFT_ARCH}" \
+    --draft-config "${DRAFT_CONFIG_DIR}" \
     --data-path "${PREPARED_DATA_DIR}" \
+    --hidden-states-path "${PREPARED_DATA_DIR}/hidden_states" \
     --save-path "${CKPT_DIR}" \
     --speculator-type dspark \
-    --num-layers "${NUM_LAYERS}" \
     --block-size "${BLOCK_SIZE}" \
     --max-anchors "${MAX_ANCHORS}" \
     --target-layer-ids ${TARGET_LAYER_IDS} \
@@ -24,9 +24,11 @@ ASCEND_RT_VISIBLE_DEVICES="${TRAIN_NPUS}" torchrun \
     --confidence-head-with-markov \
     --confidence-head-alpha 1.0 \
     --loss-fn '{"ce": 0.1, "tv": 0.9}' \
+    --draft-attn-impl eager \
     --total-seq-len "${SEQ_LENGTH}" \
     --epochs "${EPOCHS}" \
+    --save-best \
     --lr "${LR}" \
-    --on-missing skip
+    --on-missing raise
 
 echo "训练完成，checkpoint: ${CKPT_DIR}"

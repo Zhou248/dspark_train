@@ -11,7 +11,10 @@ import openai
 from datasets import load_from_disk
 from PIL import Image
 from safetensors.torch import load_file
-from speculators.data_generation.vllm_client import generate_hidden_states
+from speculators.data_generation.vllm_client import (
+    generate_hidden_states,
+    wait_for_lock,
+)
 from speculators.train.data import build_client_item
 
 from repair_hidden_states import check_hidden_states
@@ -72,6 +75,12 @@ def main() -> None:
                 timeout=600,
                 max_retries=0,
             )
+            # vLLM may return the handle while the safetensors file is still
+            # being written. Match data_generation_offline.py and wait for the
+            # producer's advisory lock before opening the file.
+            lock_path = f"{handle}.lock"
+            if Path(lock_path).exists():
+                wait_for_lock(lock_path, timeout=600)
             data = load_file(handle)
             hidden_states = data["hidden_states"]
             print(
@@ -93,8 +102,10 @@ def main() -> None:
             print(f"attempt={attempt} ERROR {type(exc).__name__}: {exc}")
         finally:
             if handle is not None:
-                Path(handle).unlink(missing_ok=True)
-                Path(f"{handle}.lock").unlink(missing_ok=True)
+                # Do not remove a live producer lock after a failed/timeout
+                # attempt. wait_for_lock removes it after acquiring the lock.
+                if not Path(f"{handle}.lock").exists():
+                    Path(handle).unlink(missing_ok=True)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,12 @@
+python diagnose_hidden_state_sample.py  \
+> --prepared-data "${PREPARED_DATA_DIR}" \
+> --endpoint "${QD_ENDPOINT}" \
+> --model "${TARGET_MODEL}" \
+> --index 29 \
+> --repeat 3
+
+index=29 seq_len=3893 assistant_tokens=98
+image=/home/w00608002/models/ALLaVA-4V/allava_laion/images/40229604.jpeg size=(1600, 2400) mode=RGB format=JPEG bytes=437501
+attempt=1 ERROR FileNotFoundError: No such file or directory: /home/z00909726/scripts/qwen36_dspark/work/hidden_states/chatcmpl-b1e9b41e64f794bc-9f3dcf6f.safetensors
+attempt=2 ERROR FileNotFoundError: No such file or directory: /home/z00909726/scripts/qwen36_dspark/work/hidden_states/chatcmpl-9138ca14618d21b9-97a3ec1f.safetensors
+attempt=3 ERROR FileNotFoundError: No such file or directory: /home/z00909726/scripts/qwen36_dspark/work/hidden_states/chatcmpl-b0499f83c1c4e2da-9b7dd3fd.safetensors

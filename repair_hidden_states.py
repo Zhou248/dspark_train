@@ -13,6 +13,8 @@ from safetensors.torch import load_file
 
 def check_hidden_states(data: dict, tokens: list[int]) -> None:
     """Local validator so this workflow does not patch msModelSpec-Dev."""
+    if hasattr(tokens, "tolist"):
+        tokens = tokens.tolist()
     token_ids = data["token_ids"].tolist()
     if token_ids != tokens:
         raise ValueError("token IDs do not match the prepared dataset")

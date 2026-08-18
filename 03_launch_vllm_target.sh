@@ -6,6 +6,11 @@ set -euo pipefail
 cd "$(dirname "$0")"
 source ./common_env.sh
 
+PARALLEL_ARGS=()
+if [ "${QD_ENABLE_EP}" = "1" ]; then
+    PARALLEL_ARGS+=(--enable-expert-parallel)
+fi
+
 cd "${MSPEC_ROOT}"
 ASCEND_RT_VISIBLE_DEVICES="${QD_NPUS}" python3 scripts/launch_vllm.py "${TARGET_MODEL}" \
     --target-layer-ids ${TARGET_LAYER_IDS} \
@@ -13,7 +18,7 @@ ASCEND_RT_VISIBLE_DEVICES="${QD_NPUS}" python3 scripts/launch_vllm.py "${TARGET_
     --host 0.0.0.0 \
     --port "${VLLM_PORT}" \
     --tensor-parallel-size "${QD_TP}" \
-    --enable-expert-parallel \
+    "${PARALLEL_ARGS[@]}" \
     --seed 1024 \
     --max-num-seqs "${QD_MAX_NUM_SEQS}" \
     --max-model-len $((SEQ_LENGTH + 1024)) \
@@ -23,6 +28,7 @@ ASCEND_RT_VISIBLE_DEVICES="${QD_NPUS}" python3 scripts/launch_vllm.py "${TARGET_
     --allowed-local-media-path /home \
     --limit-mm-per-prompt '{"image":1}' \
     --enforce-eager \
+    --no-enable-prefix-caching \
     --additional-config '{"enable_cpu_binding":true}'
 
 # 故意不使用 --async-scheduling。先验证 Qwen3.6 hybrid/Mamba 多模态

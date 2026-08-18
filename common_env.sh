@@ -39,6 +39,7 @@ export HS_CONCURRENCY="${HS_CONCURRENCY:-1}"
 export HS_MAX_CONSECUTIVE_ERRORS="${HS_MAX_CONSECUTIVE_ERRORS:-1}"
 export REPAIR_EXISTING_HS="${REPAIR_EXISTING_HS:-1}"
 export ENABLE_AIV="${ENABLE_AIV:-0}"
+export QD_ENABLE_EP="${QD_ENABLE_EP:-0}"
 
 # ============ NPU 配置 ============
 # vllm 抽隐状态使用 4 卡 TP（对齐 scripts/vllm_start.sh）
@@ -63,4 +64,4 @@ else
 fi
 export HCCL_BUFFSIZE=1024
 export OMP_NUM_THREADS=1
-export TASK_QUEUE_ENABLE=1
+export TASK_QUEUE_ENABLE="${TASK_QUEUE_ENABLE:-0}"

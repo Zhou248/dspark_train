@@ -1,0 +1,21 @@
+ python diagnose_hidden_state_sample.py  --prepared-data "${PREPARED_DATA_DIR}" --endpoint "${QD_ENDPOINT}" --model "${TARGET_MODEL}" --index 29 --repeat 3
+index=29 seq_len=3893 assistant_tokens=98
+image=/home/w00608002/models/ALLaVA-4V/allava_laion/images/40229604.jpeg size=(1600, 2400) mode=RGB format=JPEG bytes=437501
+attempt=1 handle=/home/z00909726/scripts/qwen36_dspark/work/hidden_states/chatcmpl-b3295a03a07b0fb0-97085d85.safetensors shape=[3893, 4, 2048]
+  slot=0 layer=2 nan=0 inf=0 absmax=22.25
+  slot=1 layer=20 nan=0 inf=0 absmax=41.75
+  slot=2 layer=37 nan=0 inf=0 absmax=25
+  slot=3 layer=40 nan=0 inf=0 absmax=57.5
+attempt=1 VALID
+attempt=2 handle=/home/z00909726/scripts/qwen36_dspark/work/hidden_states/chatcmpl-a4478f039cf45c4d-b7ecd83f.safetensors shape=[3893, 4, 2048]
+  slot=0 layer=2 nan=0 inf=0 absmax=4.78125
+  slot=1 layer=20 nan=0 inf=0 absmax=41.75
+  slot=2 layer=37 nan=0 inf=0 absmax=9.875
+  slot=3 layer=40 nan=0 inf=0 absmax=57.5
+attempt=2 VALID
+attempt=3 handle=/home/z00909726/scripts/qwen36_dspark/work/hidden_states/chatcmpl-8d053782caef87ae-a63a8040.safetensors shape=[3893, 4, 2048]
+  slot=0 layer=2 nan=0 inf=0 absmax=22.25
+  slot=1 layer=20 nan=0 inf=0 absmax=41.75
+  slot=2 layer=37 nan=0 inf=0 absmax=25
+  slot=3 layer=40 nan=0 inf=0 absmax=57.5
+attempt=3 VALID

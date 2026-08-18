@@ -9,7 +9,33 @@ from pathlib import Path
 
 from datasets import load_from_disk
 from safetensors.torch import load_file
-from speculators.data_generation.offline import check_hidden_states
+
+
+def check_hidden_states(data: dict, tokens: list[int]) -> None:
+    """Local validator so this workflow does not patch msModelSpec-Dev."""
+    token_ids = data["token_ids"].tolist()
+    if token_ids != tokens:
+        raise ValueError("token IDs do not match the prepared dataset")
+
+    hidden_states = data["hidden_states"]
+    nan_mask = hidden_states.isnan()
+    if nan_mask.any():
+        first = nan_mask.nonzero()[0].tolist()
+        details = ""
+        if hidden_states.ndim == 3:
+            counts = nan_mask.sum(dim=(0, 2)).tolist()
+            bad_slots = {i: int(n) for i, n in enumerate(counts) if n}
+            details = f", extracted-layer slots={bad_slots}"
+        raise ValueError(
+            f"{int(nan_mask.sum())} NaN values; "
+            f"shape={list(hidden_states.shape)}, first={first}{details}"
+        )
+    if hidden_states.isinf().any():
+        raise ValueError("hidden states contain Inf values")
+    if hidden_states.shape[0] != len(tokens):
+        raise ValueError(
+            f"hidden-state length {hidden_states.shape[0]} != token length {len(tokens)}"
+        )
 
 
 def main() -> None:
